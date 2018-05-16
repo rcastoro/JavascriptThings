@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+  	<link rel="stylesheet" type="text/css" href="styles.css">
+    <title>Socket.IO chat</title>
+    <style>
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <p id='clickable'>Static click</p>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+		// Handle web socket communications / load initial images 
+    	$(function() {
+
+    		var images = new Array();
+	      	var socket = io();
+
+	    	//Drag images 
+			function startDrag(e) {
+				// determine event object
+				if (!e) {
+					var e = window.event;
+				}
+
+				// IE uses srcElement, others use target
+				var targ = e.target ? e.target : e.srcElement;
+
+				if (targ.className != 'dragme') {return};
+				// calculate event X, Y coordinates
+					offsetX = e.clientX;
+					offsetY = e.clientY;
+
+				// assign default values for top and left properties
+				if(!targ.style.left) { targ.style.left='0px'};
+				if (!targ.style.top) { targ.style.top='0px'};
+
+				// calculate integer values for top and left 
+				// properties
+				coordX = parseInt(targ.style.left);
+				coordY = parseInt(targ.style.top);
+				drag = true;
+
+				// move div element
+				document.onmousemove=dragDiv;
+				
+			}
+			function dragDiv(e) {
+				if (!drag) {return};
+				if (!e) { var e= window.event};
+				var targ=e.target?e.target:e.srcElement;
+				// move div element
+				targ.style.left=coordX+e.clientX-offsetX+'px';
+				targ.style.top=coordY+e.clientY-offsetY+'px';
+
+				var elementID = $(targ).attr('id');
+
+				var msg = 'var targ=$("#'+elementID+'"); targ.css("left", "'+targ.style.left+'"); targ.css("top", "'+targ.style.top+'");';
+
+				socket.emit('moveImage', msg);
+
+				return false;
+			}
+			function stopDrag() {
+				drag=false;
+			}
+			window.onload = function() {
+				document.onmousedown = startDrag;
+				document.onmouseup = stopDrag;
+			}
+
+			// Handle web socket connections
+	        $('#clickable').click(function() {
+	         	socket.emit('myEvent', $('#m').val());
+			});
+
+	        var index = 0;
+	    	socket.on('loadImages', function(msg) {
+	    		if(imagesAreLoaded == 0)
+	    		{
+		    		images = msg;
+		    		$('body').append('<img id="'+index+'" src="images/'+images+'" width="400" height="200" class="dragme">');
+		    		index++;
+		    	}
+			});
+
+	    	var imagesAreLoaded = 0;
+			socket.on('ImagesAreLoaded', function(msg) {
+
+	    		imagesAreLoaded = 1;
+
+			});
+
+			socket.on('moveImage', function(msg) {
+	    		eval(msg);
+			});
+		});
+
+    </script>
+  </body>
+</html>

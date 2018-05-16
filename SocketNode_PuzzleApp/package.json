@@ -1,0 +1,10 @@
+{
+	"name": "SocketApp - Puzzle",
+	"version": "1.0.0",
+	"description": "Async and MultiPlayer Puzzle app made using Node.js, Socket.io, and express with javascript and html frontend",
+	"dependencies": {
+		"express": "^4.15.2",
+		"node": "^10.0.0",
+		"socket.io": "^2.1.0"
+	}
+}

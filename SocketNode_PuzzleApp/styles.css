@@ -1,0 +1,7 @@
+.dragme
+{
+	position:relative;
+	width: 270px;
+	height: 203px;
+	cursor: move;
+}
