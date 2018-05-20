@@ -19,22 +19,27 @@
     	$(function() {
 
     		var images = new Array();
-	      	var socket = io();
+            var socket = io();
+            var activeItem;
 
-	    	//Drag images 
+	    // Handle Drag images 
 			function startDrag(e) {
+
 				// determine event object
 				if (!e) {
 					var e = window.event;
 				}
-
+					
 				// IE uses srcElement, others use target
 				var targ = e.target ? e.target : e.srcElement;
+                if (targ.className != 'dragme') { return };
 
-				if (targ.className != 'dragme') {return};
+                activeItem = targ;
+                $(".dragme:not(#" + targ.id + ")").attr('class', 'dontdragme');
+
 				// calculate event X, Y coordinates
-					offsetX = e.clientX;
-					offsetY = e.clientY;
+				offsetX = e.clientX;
+				offsetY = e.clientY;
 
 				// assign default values for top and left properties
 				if(!targ.style.left) { targ.style.left='0px'};
@@ -48,43 +53,47 @@
 
 				// move div element
 				document.onmousemove=dragDiv;
-				
+								
 			}
+
 			function dragDiv(e) {
 				if (!drag) {return};
 				if (!e) { var e= window.event};
-				var targ=e.target?e.target:e.srcElement;
+                var targ = activeItem;
+
 				// move div element
-				targ.style.left=coordX+e.clientX-offsetX+'px';
-				targ.style.top=coordY+e.clientY-offsetY+'px';
+                targ.style.left = coordX + e.clientX - offsetX + 'px';
+                targ.style.top = coordY + e.clientY - offsetY + 'px';
 
-				var elementID = $(targ).attr('id');
+                var elementID = $(targ).attr('id');
 
-				var msg = 'var targ=$("#'+elementID+'"); targ.css("left", "'+targ.style.left+'"); targ.css("top", "'+targ.style.top+'");';
+                // Relay live image dragging information for broadcasting to all sockets
+                var msg = 'var targ=$("#' + elementID + '"); targ.css("left", "' + targ.style.left + '"); targ.css("top", "' + targ.style.top + '");';
 
-				socket.emit('moveImage', msg);
+                socket.emit('moveImage', msg);
 
-				return false;
+                return false;
+                
 			}
-			function stopDrag() {
+
+            function stopDrag() {
+                $('.dontdragme').attr('class', 'dragme');
 				drag=false;
 			}
+
 			window.onload = function() {
 				document.onmousedown = startDrag;
 				document.onmouseup = stopDrag;
 			}
 
-			// Handle web socket connections
-	        $('#clickable').click(function() {
-	         	socket.emit('myEvent', $('#m').val());
-			});
+		// Handle web socket connections
 
 	        var index = 0;
 	    	socket.on('loadImages', function(msg) {
 	    		if(imagesAreLoaded == 0)
 	    		{
 		    		images = msg;
-		    		$('body').append('<img id="'+index+'" src="images/'+images+'" width="400" height="200" class="dragme">');
+		    		$('body').append('<img src="images/'+images+'" width="400" height="200" class="dragme" id="'+index+'">');
 		    		index++;
 		    	}
 			});
