@@ -20,6 +20,8 @@
 	    // Handle Drag images 
 			function startDrag(e) {
 
+				console.log("On mouse down called");
+
 				// determine event object
 				if (!e) {
 					var e = window.event;
@@ -51,6 +53,7 @@
 
 				// move div element
 				document.onmousemove=dragDiv;
+				document.ontouchmove=dragDiv;
 								
 			}
 
@@ -61,6 +64,9 @@
                 var targ = activeItem;
 
 				// move div element
+
+				if(coordX + e.clientX - offsetX >= window.innerWidth - 100 || coordY + e.clientY - offsetY >= window.innerHeight - 100)	{return;}
+
                 targ.style.left = coordX + e.clientX - offsetX + 'px';
                 targ.style.top = coordY + e.clientY - offsetY + 'px';
 
@@ -84,9 +90,11 @@
 				drag=false;
 			}
 
-			window.onload = function() {
-				document.onmousedown = startDrag;
-				document.onmouseup = stopDrag;
+			window.onload = new function() {
+				document.addEventListener("mousedown", startDrag);
+				document.addEventListener("mouseup", stopDrag);
+				document.addEventListener("touchstart", startDrag);
+				document.addEventListener("touchend", stopDrag);
 			}
 
 		// Handle web socket connections
